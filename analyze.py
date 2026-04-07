@@ -11,6 +11,14 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date as date_type
 from pathlib import Path
 
+KST = timezone(timedelta(hours=9))
+
+
+def parse_ts(ts_str: str) -> datetime:
+    """Parse ISO timestamp and convert to KST."""
+    return datetime.fromisoformat(ts_str.replace("Z", "+00:00")).astimezone(KST)
+
+
 PRICING = {
     "claude-opus-4-6": {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.50},
     "claude-opus-4-20250918": {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.50},
@@ -231,7 +239,7 @@ def parse_sessions():
                 session["cwd"] = meta.get("cwd")
             if not session["start_time"] and meta.get("startedAt"):
                 session["start_time"] = datetime.fromtimestamp(
-                    meta["startedAt"] / 1000, tz=timezone.utc
+                    meta["startedAt"] / 1000, tz=KST
                 ).isoformat()
 
         if session["messages"] > 0:
@@ -293,8 +301,8 @@ def compute_concurrent_sessions(sessions) -> dict:
             continue  # Exclude subagent sessions from concurrent calculation
         if s["start_time"] and s["end_time"] and s["start_time"] != s["end_time"]:
             try:
-                start = datetime.fromisoformat(s["start_time"].replace("Z", "+00:00"))
-                end = datetime.fromisoformat(s["end_time"].replace("Z", "+00:00"))
+                start = parse_ts(s["start_time"])
+                end = parse_ts(s["end_time"])
                 if start < end:
                     intervals.append((start, end))
             except Exception:
@@ -366,7 +374,7 @@ def compute_weekday_avg(daily: dict) -> list:
 
 def compute_period_comparison(daily: dict) -> dict:
     """Compute current vs previous period totals for 1W and 1M."""
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now(KST).date()
 
     def sum_period(start_date, end_date):
         sessions = messages = cost = 0
@@ -407,7 +415,7 @@ def compute_period_comparison(daily: dict) -> dict:
 
 def compute_weekly_timeline(sessions) -> list:
     """Return sessions in the last 7 days with start/end hours for Gantt chart."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(KST)
     cutoff = now - timedelta(days=7)
     result = []
 
@@ -415,8 +423,8 @@ def compute_weekly_timeline(sessions) -> list:
         if not s["start_time"] or not s["end_time"]:
             continue
         try:
-            start = datetime.fromisoformat(s["start_time"].replace("Z", "+00:00"))
-            end = datetime.fromisoformat(s["end_time"].replace("Z", "+00:00"))
+            start = parse_ts(s["start_time"])
+            end = parse_ts(s["end_time"])
             if start < cutoff:
                 continue
             date_str = start.strftime("%Y-%m-%d")
@@ -534,7 +542,7 @@ def compute_streak(dates: list) -> dict:
         datetime.strptime(d, "%Y-%m-%d").date() for d in dates
     ))
 
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_str = datetime.now(KST).strftime("%Y-%m-%d")
     today = datetime.strptime(today_str, "%Y-%m-%d").date()
     yesterday = today - timedelta(days=1)
 
@@ -621,7 +629,7 @@ def compute_analytics(sessions):
 
         if s["start_time"]:
             try:
-                dt = datetime.fromisoformat(s["start_time"].replace("Z", "+00:00"))
+                dt = parse_ts(s["start_time"])
                 date_str = dt.strftime("%Y-%m-%d")
                 d = daily[date_str]
                 d["cost"] += s["cost"]
@@ -640,8 +648,8 @@ def compute_analytics(sessions):
 
         if s["start_time"] and s["end_time"] and s["start_time"] != s["end_time"]:
             try:
-                start = datetime.fromisoformat(s["start_time"].replace("Z", "+00:00"))
-                end = datetime.fromisoformat(s["end_time"].replace("Z", "+00:00"))
+                start = parse_ts(s["start_time"])
+                end = parse_ts(s["end_time"])
                 dur = (end - start).total_seconds() / 60
                 if 0 < dur < 1440:
                     session_durations.append({

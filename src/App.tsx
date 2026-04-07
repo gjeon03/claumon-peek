@@ -72,7 +72,7 @@ export default function App() {
         <TodaySummary data={data} />
 
         <div className="mt-4">
-          <SummaryCards data={data} period={period} />
+          <SummaryCards data={data} period={period} filteredDates={filteredDates} />
         </div>
 
         <div className="mt-6">
