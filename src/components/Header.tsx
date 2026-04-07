@@ -3,7 +3,7 @@ import type { Theme } from '../lib/theme'
 
 const PERIODS: Period[] = ['1W', '1M', '3M', 'ALL']
 
-const THEME_CYCLE: Theme[] = ['light', 'dark', 'system']
+const THEME_CYCLE: Theme[] = ['system', 'light', 'dark']
 
 const THEME_ICON: Record<Theme, string> = {
   dark: '🌙',

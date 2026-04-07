@@ -3,7 +3,7 @@ export type Theme = 'dark' | 'light' | 'system'
 const STORAGE_KEY = 'claumon-theme'
 
 export function getStoredTheme(): Theme {
-  return (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'dark'
+  return (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system'
 }
 
 export function storeTheme(theme: Theme): void {
