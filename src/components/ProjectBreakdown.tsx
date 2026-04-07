@@ -42,12 +42,12 @@ export function ProjectBreakdown({ projects }: ProjectBreakdownProps) {
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.05)"
+            stroke="var(--c-border-soft)"
             horizontal={false}
           />
           <XAxis
             type="number"
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
+            tick={{ fontSize: 11, fill: 'var(--c-text-secondary)' }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v: number) => fmtCost(v)}
@@ -62,12 +62,12 @@ export function ProjectBreakdown({ projects }: ProjectBreakdownProps) {
           />
           <Tooltip
             contentStyle={{
-              background: '#1e1b2e',
-              border: '1px solid rgba(139,92,246,0.3)',
+              background: 'var(--c-card)',
+              border: '1px solid var(--c-border)',
               borderRadius: 8,
               fontSize: 12,
             }}
-            labelStyle={{ color: '#e2e0ff' }}
+            labelStyle={{ color: 'var(--c-text)' }}
             itemStyle={{ color: '#a78bfa' }}
             formatter={(v: number) => [fmtCost(v), '비용']}
           />
@@ -78,7 +78,7 @@ export function ProjectBreakdown({ projects }: ProjectBreakdownProps) {
             <LabelList
               dataKey="costLabel"
               position="right"
-              style={{ fontSize: 11, fill: '#9CA3AF' }}
+              style={{ fontSize: 11, fill: 'var(--c-text-secondary)' }}
             />
           </Bar>
         </BarChart>

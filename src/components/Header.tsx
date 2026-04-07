@@ -1,6 +1,21 @@
 import type { Period } from '../types'
+import type { Theme } from '../lib/theme'
 
 const PERIODS: Period[] = ['1W', '1M', '3M', 'ALL']
+
+const THEME_CYCLE: Theme[] = ['dark', 'light', 'system']
+
+const THEME_ICON: Record<Theme, string> = {
+  dark: '🌙',
+  light: '☀️',
+  system: '💻',
+}
+
+const THEME_LABEL: Record<Theme, string> = {
+  dark: '다크',
+  light: '라이트',
+  system: '시스템',
+}
 
 interface HeaderProps {
   period: Period
@@ -10,11 +25,19 @@ interface HeaderProps {
   accounts?: string[]
   account?: string
   setAccount?: (a: string) => void
+  theme: Theme
+  setTheme: (t: Theme) => void
 }
 
-export function Header({ period, setPeriod, dateRange, onShare, accounts, account, setAccount }: HeaderProps) {
+export function Header({ period, setPeriod, dateRange, onShare, accounts, account, setAccount, theme, setTheme }: HeaderProps) {
   const [start, end] = dateRange
   const hasMultipleAccounts = accounts && accounts.length > 1
+
+  function cycleTheme() {
+    const idx = THEME_CYCLE.indexOf(theme)
+    const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]
+    setTheme(next)
+  }
 
   return (
     <div className="flex justify-between items-start pb-5 mb-6 border-b border-border">
@@ -40,6 +63,13 @@ export function Header({ period, setPeriod, dateRange, onShare, accounts, accoun
             ))}
           </select>
         )}
+        <button
+          onClick={cycleTheme}
+          title={`현재: ${THEME_LABEL[theme]} — 클릭하여 전환`}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-text-secondary hover:text-text-primary hover:border-border transition-colors"
+        >
+          {THEME_ICON[theme]} {THEME_LABEL[theme]}
+        </button>
         {onShare && (
           <button
             onClick={onShare}

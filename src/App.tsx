@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AnalyticsData, Period } from './types'
 import { sliceDates } from './lib/filter'
+import { type Theme, getStoredTheme, storeTheme, applyTheme } from './lib/theme'
 import { Header } from './components/Header'
 import { TodaySummary } from './components/TodaySummary'
 import { SummaryCards } from './components/SummaryCards'
@@ -27,6 +28,22 @@ export default function App() {
   const [period, setPeriod] = useState<Period>('1M')
   const [account, setAccount] = useState<string>('all')
   const [showShare, setShowShare] = useState(false)
+  const [theme, setTheme] = useState<Theme>(() => getStoredTheme())
+
+  // Apply theme on mount and whenever theme state changes
+  useEffect(() => {
+    applyTheme(theme)
+    storeTheme(theme)
+  }, [theme])
+
+  // Listen for system preference changes when in system mode
+  useEffect(() => {
+    if (theme !== 'system') return
+    const mq = window.matchMedia('(prefers-color-scheme: light)')
+    const handler = () => applyTheme('system')
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [theme])
 
   useEffect(() => {
     fetch('/data.json')
@@ -37,7 +54,7 @@ export default function App() {
 
   if (!rawData) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-text-secondary" style={{ background: '#0b0b11' }}>
+      <div className="min-h-screen flex items-center justify-center text-text-secondary bg-bg">
         Loading...
       </div>
     )
@@ -57,7 +74,7 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ background: '#0b0b11', color: '#e8eaf0' }}>
+    <div className="min-h-screen bg-bg text-text-primary">
       <div className="max-w-[1200px] mx-auto px-6 py-6">
         <Header
           period={period}
@@ -67,6 +84,8 @@ export default function App() {
           accounts={accounts}
           account={account}
           setAccount={setAccount}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         <TodaySummary data={data} />

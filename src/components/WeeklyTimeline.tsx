@@ -78,7 +78,7 @@ export function WeeklyTimeline({ timeline }: WeeklyTimelineProps) {
                 {fmtDate(date)}
               </div>
               <div
-                className="flex-1 relative rounded-md bg-white/[0.06]"
+                className="flex-1 relative rounded-md bg-border-soft/50"
                 style={{ height: 32 }}
               >
                 {/* Grid lines */}
@@ -86,7 +86,7 @@ export function WeeklyTimeline({ timeline }: WeeklyTimelineProps) {
                   h > 0 && (
                     <div
                       key={h}
-                      className="absolute inset-y-0 border-l border-dashed border-white/[0.07]"
+                      className="absolute inset-y-0 border-l border-dashed border-border"
                       style={{ left: `${(h / 24) * 100}%` }}
                     />
                   )

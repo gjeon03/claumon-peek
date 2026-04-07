@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0b0b11;
-  --color-card: #12121a;
-  --color-border: #1c1c2e;
-  --color-border-soft: #1a1a28;
-  --color-text-primary: #e8eaf0;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #3b3f4a;
+  /* Keep existing custom color names but reference CSS variables */
+  --color-bg: var(--c-bg);
+  --color-card: var(--c-card);
+  --color-border: var(--c-border);
+  --color-border-soft: var(--c-border-soft);
+  --color-text-primary: var(--c-text);
+  --color-text-secondary: var(--c-text-secondary);
+  --color-text-muted: var(--c-text-muted);
+  /* Accent colors stay the same in both themes */
   --color-accent-purple: #8b5cf6;
   --color-accent-blue: #60a5fa;
   --color-accent-green: #34d399;
@@ -15,22 +17,54 @@
   --color-accent-pink: #ec4899;
 }
 
+/* Dark theme (default) */
+:root {
+  --c-bg: #0b0b11;
+  --c-card: #12121a;
+  --c-border: #1c1c2e;
+  --c-border-soft: #1a1a28;
+  --c-text: #e8eaf0;
+  --c-text-secondary: #6b7280;
+  --c-text-muted: #3b3f4a;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --c-bg: #f8f9fb;
+  --c-card: #ffffff;
+  --c-border: #e2e5ea;
+  --c-border-soft: #ebedf0;
+  --c-text: #1a1a2e;
+  --c-text-secondary: #6b7280;
+  --c-text-muted: #9ca3af;
+}
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--c-bg);
+  color: var(--c-text);
   margin: 0;
 }
 
-/* Recharts dark theme */
-.recharts-cartesian-grid line { stroke: var(--color-border-soft); }
-.recharts-text { fill: var(--color-text-secondary); font-size: 11px; }
+/* Recharts theme */
+.recharts-cartesian-grid line { stroke: var(--c-border-soft); }
+.recharts-text { fill: var(--c-text-secondary); font-size: 11px; }
 .recharts-default-tooltip {
-  background: var(--color-card) !important;
-  border: 1px solid var(--color-border) !important;
+  background: var(--c-card) !important;
+  border: 1px solid var(--c-border) !important;
   border-radius: 10px !important;
   padding: 10px 14px !important;
 }
-.recharts-tooltip-item { color: var(--color-text-primary) !important; font-size: 12px !important; }
-.recharts-tooltip-label { color: var(--color-text-secondary) !important; font-size: 11px !important; }
-.recharts-legend-item-text { color: var(--color-text-secondary) !important; font-size: 11px !important; }
+.recharts-tooltip-item { color: var(--c-text) !important; font-size: 12px !important; }
+.recharts-tooltip-label { color: var(--c-text-secondary) !important; font-size: 11px !important; }
+.recharts-legend-item-text { color: var(--c-text-secondary) !important; font-size: 11px !important; }
+
+/* Light mode Recharts overrides */
+[data-theme="light"] .recharts-cartesian-grid line { stroke: #ebedf0; }
+[data-theme="light"] .recharts-text { fill: #6b7280; }
+[data-theme="light"] .recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e2e5ea !important;
+}
+[data-theme="light"] .recharts-tooltip-item { color: #1a1a2e !important; }
+[data-theme="light"] .recharts-tooltip-label { color: #6b7280 !important; }
