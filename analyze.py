@@ -21,7 +21,7 @@ PRICING = {
     "_default": {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.30},
 }
 
-CLAUDE_DIR = Path.home() / ".claude"
+CLAUDE_DIR = Path(os.environ.get("CLAUDE_DIR", Path.home() / ".claude"))
 PROJECTS_DIR = CLAUDE_DIR / "projects"
 SESSIONS_DIR = CLAUDE_DIR / "sessions"
 HISTORY_FILE = CLAUDE_DIR / "history.jsonl"

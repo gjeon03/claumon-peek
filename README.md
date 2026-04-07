@@ -11,6 +11,12 @@ pnpm dev        # 데이터 파싱 + dev server 실행
 
 `pnpm dev` 하나로 `~/.claude/` 디렉토리의 세션 데이터를 파싱하고 대시보드를 띄웁니다.
 
+다른 경로의 Claude 데이터를 분석하려면:
+
+```bash
+CLAUDE_DIR=/path/to/.claude pnpm dev
+```
+
 ## 주요 통계
 
 - 일별 비용 추이 / 토큰 사용량
