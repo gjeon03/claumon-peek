@@ -7,10 +7,15 @@ interface HeaderProps {
   setPeriod: (p: Period) => void
   dateRange: [string, string]
   onShare?: () => void
+  accounts?: string[]
+  account?: string
+  setAccount?: (a: string) => void
 }
 
-export function Header({ period, setPeriod, dateRange, onShare }: HeaderProps) {
+export function Header({ period, setPeriod, dateRange, onShare, accounts, account, setAccount }: HeaderProps) {
   const [start, end] = dateRange
+  const hasMultipleAccounts = accounts && accounts.length > 1
+
   return (
     <div className="flex justify-between items-start pb-5 mb-6 border-b border-border">
       <div>
@@ -23,6 +28,18 @@ export function Header({ period, setPeriod, dateRange, onShare }: HeaderProps) {
         </p>
       </div>
       <div className="flex items-center gap-3">
+        {hasMultipleAccounts && setAccount && (
+          <select
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-text-primary appearance-none cursor-pointer"
+          >
+            <option value="all">전체</option>
+            {accounts.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+        )}
         {onShare && (
           <button
             onClick={onShare}
@@ -31,21 +48,21 @@ export function Header({ period, setPeriod, dateRange, onShare }: HeaderProps) {
             공유 카드
           </button>
         )}
-      <div className="flex gap-1 bg-card border border-border rounded-full p-1">
-        {PERIODS.map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={
-              p === period
-                ? 'px-4 py-1.5 text-xs font-semibold rounded-full bg-accent-purple text-white transition-colors'
-                : 'px-4 py-1.5 text-xs font-semibold rounded-full text-text-secondary hover:text-text-primary transition-colors'
-            }
-          >
-            {p}
-          </button>
-        ))}
-      </div>
+        <div className="flex gap-1 bg-card border border-border rounded-full p-1">
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={
+                p === period
+                  ? 'px-4 py-1.5 text-xs font-semibold rounded-full bg-accent-purple text-white transition-colors'
+                  : 'px-4 py-1.5 text-xs font-semibold rounded-full text-text-secondary hover:text-text-primary transition-colors'
+              }
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )

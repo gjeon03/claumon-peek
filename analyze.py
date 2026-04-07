@@ -115,15 +115,19 @@ def parse_sessions():
             except Exception:
                 pass
 
-    jsonl_files = []
+    # Collect files with their source account tag
+    jsonl_files = []  # list of (filepath, account_name)
     for claude_dir in CLAUDE_DIRS:
+        account = claude_dir.name.replace(".claude-", "").replace(".claude", "default")
         projects_dir = claude_dir / "projects"
-        jsonl_files += list(projects_dir.glob("*/*.jsonl"))
-        jsonl_files += list(projects_dir.glob("*/*/subagents/*.jsonl"))
+        for f in projects_dir.glob("*/*.jsonl"):
+            jsonl_files.append((f, account))
+        for f in projects_dir.glob("*/*/subagents/*.jsonl"):
+            jsonl_files.append((f, account))
     total = len(jsonl_files)
     print(f"Parsing {total} session files...")
 
-    for i, filepath in enumerate(jsonl_files):
+    for i, (filepath, account) in enumerate(jsonl_files):
         if i % 100 == 0:
             print(f"  {i}/{total}...", end="\r")
 
@@ -137,6 +141,7 @@ def parse_sessions():
 
         session = {
             "project": project_name,
+            "account": account,
             "is_subagent": is_subagent,
             "session_id": filepath.stem,
             "messages": 0, "assistant_messages": 0, "user_messages": 0,
@@ -743,37 +748,36 @@ def main():
         print("No session data found.")
         sys.exit(1)
 
-    analytics = compute_analytics(sessions)
+    # Compute combined analytics
+    combined = compute_analytics(sessions)
+
+    # Compute per-account analytics
+    accounts = {}
+    account_names = sorted(set(s["account"] for s in sessions))
+    if len(account_names) > 1:
+        for acc in account_names:
+            acc_sessions = [s for s in sessions if s["account"] == acc]
+            if acc_sessions:
+                accounts[acc] = compute_analytics(acc_sessions)
+                print(f"  Account '{acc}': {len(acc_sessions)} sessions, ${accounts[acc]['total_cost']:.2f}")
+
+    # Build output: combined data + accounts list + per-account data
+    output = combined
+    output["accounts"] = account_names if len(account_names) > 1 else []
+    output["account_data"] = accounts
 
     output_dir = Path(__file__).parent / "public"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "data.json"
 
     with open(output_path, "w") as f:
-        json.dump(analytics, f, ensure_ascii=False)
+        json.dump(output, f, ensure_ascii=False)
 
     print(f"\nOutput: {output_path}")
-    print(f"  Sessions: {analytics['total_sessions']}")
-    print(f"  Cost: ${analytics['total_cost']}")
-    print(f"  Tokens: {analytics['total_input_tokens'] + analytics['total_output_tokens']:,}")
-    print(f"  Command frequency entries: {len(analytics['command_frequency'])}")
-    print(f"  Concurrent x2+: {analytics['concurrent']['x2']} min")
-    print(f"  Weekly timeline entries: {len(analytics['weekly_timeline'])}")
+    print(f"  Sessions: {combined['total_sessions']}")
+    print(f"  Cost: ${combined['total_cost']}")
+    print(f"  Accounts: {account_names}")
 
-    h = analytics["highlights"]
-    print(f"\nHighlights:")
-    print(f"  most_expensive_day: {h['most_expensive_day']}")
-    print(f"  longest_session: {h['longest_session']}")
-    print(f"  busiest_hour: {h['busiest_hour']}")
-    print(f"  cache_vs_cost: {h['cache_vs_cost']}")
-    print(f"  favorite_model: {h['favorite_model']}")
-
-    s = analytics["streak"]
-    print(f"\nStreak:")
-    print(f"  current: {s['current']}")
-    print(f"  longest: {s['longest']} ({s['longest_start']} ~ {s['longest_end']})")
-
-    # Validate JSON
     with open(output_path) as f:
         json.load(f)
     print("  JSON validation: OK")

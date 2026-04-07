@@ -100,6 +100,8 @@ export interface AnalyticsData {
   period_comparison: Record<string, PeriodComparison>
   highlights: Highlights
   streak: Streak
+  accounts: string[]
+  account_data: Record<string, AnalyticsData>
 }
 
 export type Period = '1W' | '1M' | '3M' | 'ALL'

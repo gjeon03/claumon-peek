@@ -23,24 +23,32 @@ import { CacheStats } from './components/CacheStats'
 import { ShareCard } from './components/ShareCard'
 
 export default function App() {
-  const [data, setData] = useState<AnalyticsData | null>(null)
+  const [rawData, setRawData] = useState<AnalyticsData | null>(null)
   const [period, setPeriod] = useState<Period>('1M')
+  const [account, setAccount] = useState<string>('all')
   const [showShare, setShowShare] = useState(false)
 
   useEffect(() => {
     fetch('/data.json')
       .then((r) => r.json())
-      .then((d: AnalyticsData) => setData(d))
+      .then((d: AnalyticsData) => setRawData(d))
       .catch(console.error)
   }, [])
 
-  if (!data) {
+  if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center text-text-secondary" style={{ background: '#0b0b11' }}>
         Loading...
       </div>
     )
   }
+
+  // Switch data source based on account selection
+  const data = account === 'all' || !rawData.account_data[account]
+    ? rawData
+    : rawData.account_data[account]
+
+  const accounts = rawData.accounts ?? []
 
   const filteredDates = sliceDates(data.dates, period)
   const dateRange: [string, string] = [
@@ -51,7 +59,15 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ background: '#0b0b11', color: '#e8eaf0' }}>
       <div className="max-w-[1200px] mx-auto px-6 py-6">
-        <Header period={period} setPeriod={setPeriod} dateRange={dateRange} onShare={() => setShowShare(true)} />
+        <Header
+          period={period}
+          setPeriod={setPeriod}
+          dateRange={dateRange}
+          onShare={() => setShowShare(true)}
+          accounts={accounts}
+          account={account}
+          setAccount={setAccount}
+        />
 
         <TodaySummary data={data} />
 
