@@ -21,7 +21,33 @@ PRICING = {
     "_default": {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.30},
 }
 
-CLAUDE_DIR = Path(os.environ.get("CLAUDE_DIR", Path.home() / ".claude"))
+def find_claude_dirs() -> list[Path]:
+    """Auto-discover Claude data directories."""
+    if os.environ.get("CLAUDE_DIR"):
+        return [Path(os.environ["CLAUDE_DIR"])]
+
+    home = Path.home()
+    candidates = []
+    # Default location
+    default = home / ".claude"
+    if default.is_dir() or default.is_symlink():
+        candidates.append(default.resolve())
+    # Scan for .claude-* variants (e.g. .claude-work, .claude-personal)
+    for p in home.glob(".claude-*"):
+        if p.is_dir() and (p / "projects").is_dir():
+            candidates.append(p.resolve())
+    # Deduplicate (symlinks may resolve to same path)
+    seen = set()
+    result = []
+    for p in candidates:
+        if p not in seen:
+            seen.add(p)
+            result.append(p)
+    return result if result else [home / ".claude"]
+
+
+CLAUDE_DIRS = find_claude_dirs()
+CLAUDE_DIR = CLAUDE_DIRS[0]  # Primary for history/sessions
 PROJECTS_DIR = CLAUDE_DIR / "projects"
 SESSIONS_DIR = CLAUDE_DIR / "sessions"
 HISTORY_FILE = CLAUDE_DIR / "history.jsonl"
@@ -79,15 +105,21 @@ def parse_sessions():
     sessions = []
     session_meta = {}
 
-    for f in SESSIONS_DIR.glob("*.json"):
-        try:
-            with open(f) as fh:
-                meta = json.load(fh)
-                session_meta[meta.get("sessionId", "")] = meta
-        except Exception:
-            pass
+    for claude_dir in CLAUDE_DIRS:
+        sessions_dir = claude_dir / "sessions"
+        for f in sessions_dir.glob("*.json"):
+            try:
+                with open(f) as fh:
+                    meta = json.load(fh)
+                    session_meta[meta.get("sessionId", "")] = meta
+            except Exception:
+                pass
 
-    jsonl_files = list(PROJECTS_DIR.glob("*/*.jsonl")) + list(PROJECTS_DIR.glob("*/*/subagents/*.jsonl"))
+    jsonl_files = []
+    for claude_dir in CLAUDE_DIRS:
+        projects_dir = claude_dir / "projects"
+        jsonl_files += list(projects_dir.glob("*/*.jsonl"))
+        jsonl_files += list(projects_dir.glob("*/*/subagents/*.jsonl"))
     total = len(jsonl_files)
     print(f"Parsing {total} session files...")
 
@@ -701,6 +733,10 @@ def compute_analytics(sessions):
 def main():
     print("ClauMon Peek - Claude Code Analytics")
     print("=" * 40)
+    for d in CLAUDE_DIRS:
+        print(f"  Data: {d}")
+    if len(CLAUDE_DIRS) > 1:
+        print(f"  ({len(CLAUDE_DIRS)} directories detected)")
 
     sessions = parse_sessions()
     if not sessions:
