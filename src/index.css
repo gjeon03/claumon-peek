@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0b0b11;
+  --color-card: #12121a;
+  --color-border: #1c1c2e;
+  --color-border-soft: #1a1a28;
+  --color-text-primary: #e8eaf0;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #3b3f4a;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-blue: #60a5fa;
+  --color-accent-green: #34d399;
+  --color-accent-amber: #fbbf24;
+  --color-accent-pink: #ec4899;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Recharts dark theme */
+.recharts-cartesian-grid line { stroke: var(--color-border-soft); }
+.recharts-text { fill: var(--color-text-secondary); font-size: 11px; }
+.recharts-default-tooltip {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+}
+.recharts-tooltip-item { color: var(--color-text-primary) !important; font-size: 12px !important; }
+.recharts-tooltip-label { color: var(--color-text-secondary) !important; font-size: 11px !important; }
+.recharts-legend-item-text { color: var(--color-text-secondary) !important; font-size: 11px !important; }
